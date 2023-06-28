@@ -60,7 +60,7 @@ df_all <- df_all %>%
 df_all %>%
   filter(total_cnt > 0) %>%
   ggplot(aes(x = County, y = pct_first_dose, fill = County)) +
-geom_point(aes(y = pct_first_dose, size = adj_total_cnt), alpha = 0.5, shape = 21) +
+  geom_point(aes(y = pct_first_dose, size = adj_total_cnt), alpha = 0.5, shape = 21) +
   geom_segment(aes(x = County, xend = County, y = 0, yend = pct_first_dose)) +
   scale_size(range = c(1, 15)) +
   hrbrthemes::theme_ipsum() +

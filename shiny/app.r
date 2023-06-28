@@ -2,8 +2,9 @@ library(shiny)
 library(leaflet)
 library(tidycensus)
 library(sf)
+library(tidyverse)
 
-# Define UI for application
+# UI defines UI for application
 ui <- bootstrapPage(
     tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
     leafletOutput("map", width = "100%", height = "100%"),
@@ -22,25 +23,16 @@ ui <- bootstrapPage(
     )
 )
 
-# Get census data
-counties <- tidycensus::get_acs(
-    geography = "county",
-    variables = "B01003_001E",
-    state = "MI",
-    geometry = TRUE
-)
-
-
+# counties get the preloaded data of Michigan counties
+counties <- read_rds("data/counties.rds")
 
 # Server is used to create the web application logics
 server <- function(input, output) {
-
     output$map <- renderLeaflet({
-        leaflet() %>%
+        leaflet(data = counties) %>%
         setView(-85.602, 44.315, zoom = 5) %>%
         addTiles() %>%
         addPolygons(
-            data = counties,
             fillColor = ~colorQuantile("YlOrRd", estimate, n = 5),
             fillOpacity = 0.7,
             weight = 0.5,
@@ -55,12 +47,5 @@ server <- function(input, output) {
     })
 }
 
-# Run the application
+# ShinyAPP runs the application
 shinyApp(ui = ui, server = server)
-
-
-# Diana in the health department surveillance
-# combine some data sources
-
-# fire up
-# Integration the 
