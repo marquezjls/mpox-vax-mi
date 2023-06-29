@@ -7,13 +7,11 @@ library(viridis)
 
 # Preload data
 # counties get the preloaded data of Michigan counties
-counties <- read_rds("data/counties.rds")
+db <- read_rds("data/db.rds")
 
 # county_list get the list of names of counties
-counties <- counties %>%
-    mutate(county_name = str_split_i(NAME, ",", 1))
 
-county_list <- counties %>%
+county_list <- db %>%
     arrange(county_name) %>%
     pull(county_name)
 
@@ -62,15 +60,15 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 
 # leaflet debug
-leaflet(data = counties) %>%
+leaflet(data = db) %>%
     setView(-85.602, 44.315, zoom = 7) %>%
     addTiles() %>%
     addPolygons(
         fillColor = ~ colorQuantile(
-            palette = viridis(5),
-            estimate,
+            palette = "Blues",
+            first_dose,
             n = 5
-        )(estimate),
+        )(first_dose),
         color = "black",
         weight = 0.5,
         fillOpacity = 0.5,
@@ -79,6 +77,6 @@ leaflet(data = counties) %>%
             fillOpacity = 0.8,
             bringToFront = TRUE
         ),
-        label = ~ paste0(county_name, ": ", estimate),
-        popup = ~ paste0(county_name, ": ", estimate)
+        label = ~ paste0(county_name, ": ", first_dose),
+        popup = ~ paste0(county_name, ": ", first_dose)
     )

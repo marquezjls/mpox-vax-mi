@@ -1,6 +1,6 @@
 library(tidyverse)
 
-counties_mi <- tidycensus::get_acs(
+counties_mi_r <- tidycensus::get_acs(
     geography = "county",
     variables = "B01003_001E",
     state = "MI",
@@ -8,4 +8,10 @@ counties_mi <- tidycensus::get_acs(
     geometry = TRUE
 )
 
-write_rds(counties_mi, "data/counties.rds")
+db <- counties_mi_r %>%
+    mutate(county_name = str_split_i(NAME, ",", 1)) %>%
+    select(county_name, geometry) %>%
+    left_join(county_all, by = c("county_name" = "County"))
+
+view(db)
+write_rds(db, "data/db.rds")
