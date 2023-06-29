@@ -1,9 +1,7 @@
 library(shiny)
 library(leaflet)
-library(tidycensus)
 library(sf)
 library(tidyverse)
-library(viridis)
 
 # Preload data
 # counties get the preloaded data of Michigan counties
@@ -38,7 +36,7 @@ ui <- bootstrapPage(
 # Server is used to create the web application logics
 server <- function(input, output) {
     output$map <- renderLeaflet({
-        leaflet(data = counties) %>%
+        leaflet(data = db) %>%
             setView(-85.602, 44.315, zoom = 5) %>%
             addTiles() %>%
             addPolygons(
@@ -57,18 +55,18 @@ server <- function(input, output) {
 }
 
 # ShinyAPP runs the application
-shinyApp(ui = ui, server = server)
+# shinyApp(ui = ui, server = server)
 
 # leaflet debug
 leaflet(data = db) %>%
     setView(-85.602, 44.315, zoom = 7) %>%
     addTiles() %>%
     addPolygons(
-        fillColor = ~ colorQuantile(
+        fillColor = ~ colorNumeric(
             palette = "Blues",
-            first_dose,
+            first_pct,
             n = 5
-        )(first_dose),
+        )(first_pct),
         color = "black",
         weight = 0.5,
         fillOpacity = 0.5,
@@ -77,6 +75,8 @@ leaflet(data = db) %>%
             fillOpacity = 0.8,
             bringToFront = TRUE
         ),
-        label = ~ paste0(county_name, ": ", first_dose),
-        popup = ~ paste0(county_name, ": ", first_dose)
+        label = ~ paste0(county_name, ": ", first_pct),
+        popup = ~ paste0(county_name, ": ", first_pct)
     )
+
+view(db)
