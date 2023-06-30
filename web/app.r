@@ -16,6 +16,7 @@ county_list <- db %>%
 # UI defines UI for application
 ui <- bootstrapPage(
     tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
+    actionButton("browser", "Trigger browser()"),
     leafletOutput("map", width = "100%", height = "100%"),
     absolutePanel(
         top = 10, right = 10,
@@ -26,21 +27,38 @@ ui <- bootstrapPage(
             county_list
         ),
         selectInput(
-            "layer",
-            "Layer:",
-            c("First Dose", "Second Dose", "Risk Estimate")
+            inputId = "layer",
+            label = "Layer:",
+            choices = c(
+                "First Dose" = "first_pct",
+                "Second Dose" = "second_pct",
+                "Risk Estimate" = "risk_estimate"
+            ),
+            selected = "first_pct"
         )
     )
 )
 
 # Server is used to create the web application logics
 server <- function(input, output) {
+    observeEvent(input$browser, {
+        browser()
+    })
+
+    reactive_color <- reactive({
+        colorQuantile(
+            palette = "Blues",
+            db[[input$layer]],
+            n = 5
+        )(db[[input$layer]])
+    })
+
     output$map <- renderLeaflet({
         leaflet(data = db) %>%
-            setView(-85.602, 44.315, zoom = 5) %>%
+            setView(-85.602, 44.315, zoom = 7) %>%
             addTiles() %>%
             addPolygons(
-                fillColor = ~ colorQuantile(palette = viridis(5), estimate, n = 5)(estimate),
+                fillColor = reactive_color(),
                 color = "black",
                 weight = 0.5,
                 fillOpacity = 0.5,
@@ -49,20 +67,20 @@ server <- function(input, output) {
                     fillOpacity = 0.8,
                     bringToFront = TRUE
                 ),
-                label = ~ paste0(county_name, ": ", estimate)
+                popup = ~ paste0(county_name, ": ", first_pct)
             )
     })
 }
 
 # ShinyAPP runs the application
-# shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server)
 
 # leaflet debug
 leaflet(data = db) %>%
     setView(-85.602, 44.315, zoom = 7) %>%
     addTiles() %>%
     addPolygons(
-        fillColor = ~ colorNumeric(
+        fillColor = ~ colorQuantile(
             palette = "Blues",
             first_pct,
             n = 5
@@ -75,7 +93,6 @@ leaflet(data = db) %>%
             fillOpacity = 0.8,
             bringToFront = TRUE
         ),
-        label = ~ paste0(county_name, ": ", first_pct),
         popup = ~ paste0(county_name, ": ", first_pct)
     )
 
