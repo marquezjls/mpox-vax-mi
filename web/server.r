@@ -19,10 +19,19 @@ server <- function(input, output) {
         browser()
     })
 
+    reactive_color_palatte <- reactive({
+        req(input$layer)
+        ifelse(
+            input$layer == "outbreak_prob",
+            "Reds",
+            "Blues"
+            )
+    })
+
     # reactive_color is used to create the color palette for the map
     reactive_color <- reactive({
         colorQuantile(
-            palette = "Blues",
+            palette = reactive_color_palatte(),
             db[[input$layer]],
             n = 5
         )(db[[input$layer]])
@@ -37,10 +46,10 @@ server <- function(input, output) {
                 fillColor = reactive_color(),
                 color = "black",
                 weight = 0.5,
-                fillOpacity = 0.5,
+                fillOpacity = 0.6,
                 highlight = highlightOptions(
                     color = "black",
-                    fillOpacity = 0.8,
+                    fillOpacity = 0.9,
                     bringToFront = TRUE
                 ),
                 popup = ~ paste0(county_name, ": ", first_pct)

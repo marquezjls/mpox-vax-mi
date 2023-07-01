@@ -17,7 +17,7 @@ ui <- bootstrapPage(
             choices = c(
                 "First Dose" = "first_pct",
                 "Second Dose" = "second_pct",
-                "Risk Estimate" = "risk_estimate"
+                "Risk Estimate" = "outbreak_prob"
             ),
             selected = "first_pct"
         )

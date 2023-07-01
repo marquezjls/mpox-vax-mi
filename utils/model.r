@@ -2,6 +2,7 @@ library(tidyverse)
 
 outbreak_predict_r <- read_csv("data/risk-assessment-of-resurgence.csv")
 
+# outbreak_predict is the predicted outbreak model
 outbreak_predict <- outbreak_predict_r %>%
     select(Coverage, `Outbreak Probability`) %>%
     rename(outbreak_prob = `Outbreak Probability`)
