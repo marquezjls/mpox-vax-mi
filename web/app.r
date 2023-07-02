@@ -10,14 +10,14 @@ db <- read_rds("../data/db.rds")
 # county_list generates the list of names of counties
 county_list <- db %>%
     arrange(County) %>%
-    pull(County) %>%
-    append("---", after = 0)
+    pull(County)
 
 # ui defines UI for application
 ui <- bootstrapPage(
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "mycss.css")
+    ),
     tags$style(type = "text/css", "html, body {width:100%;height:100%}"),
-    actionButton("browser", "Trigger browser()"),
-    uiOutput("log"),
     leafletOutput("map", width = "100%", height = "100%"),
     absolutePanel(
         top = 10, right = 10,
@@ -29,28 +29,67 @@ ui <- bootstrapPage(
         ),
         selectInput(
             inputId = "layer",
-            label = "Layer:",
+            label = "Map Layer:",
             choices = c(
                 "First Dose" = "first_pct",
                 "Second Dose" = "second_pct",
                 "Risk Estimate" = "outbreak_prob"
             ),
             selected = "first_pct"
-        )
+        ),
+        uiOutput("info")
     )
 )
 
 # server is used to create the web application logics
 server <- function(input, output) {
-    # browser is used to debug the shiny app
-    observeEvent(input$browser, {
-        browser()
+    # reactive_info is the reactive data for the info panel
+    reactive_info <- reactive({
+        req(input$county)
+        db %>%
+            filter(County == input$county)
     })
 
+    # output$info is the info panel
     observeEvent(input$county, {
-        output$log <- renderUI({
-            paste0("You have selected ", input$county)
+        output$info <- renderUI({
+            div(
+                class = "info",
+                div(
+                    class = "info-item",
+                    span(class = "info-item-title", "FIRST DOSE VACCINE",),
+                    span(
+                        class = "info-item-value",
+                        reactive_info()$first_pct * 100, "%"
+                    )
+                ),
+                div(
+                    class = "info-item",
+                    span(class = "info-item-title", "SECOND DOSE VACCINE"),
+                    span(
+                        class = "info-item-value",
+                        reactive_info()$second_pct * 100, "%"
+                    )
+                ),
+                div(
+                    class = "info-item",
+                    span(class = "info-item-title", "OUTBREAK PROBABILITY"),
+                    span(
+                        class = "info-item-value-red",
+                        reactive_info()$outbreak_prob * 100, "%"
+                    )
+                )
+            )
         })
+    })
+
+    # input$map_shape_click updates the county selection from clicks on the map
+    observeEvent(input$map_shape_click, {
+        updateSelectInput(
+            inputId = "county",
+            selected = input$map_shape_click$id
+        )
+        input$map_shape_click$id
     })
 
     # reactive_color_palatte is *Blues* for vaccine coverages
@@ -73,9 +112,6 @@ server <- function(input, output) {
         )(db[[input$layer]])
     })
 
-# reactive_popup is used to create the popup for the map
-
-
     # output$map is the leaflet map
     output$map <- renderLeaflet({
         leaflet(data = db) %>%
@@ -86,15 +122,11 @@ server <- function(input, output) {
                 color = "black",
                 weight = 0.5,
                 fillOpacity = 0.6,
-                layerId = ~ County,
+                layerId = ~County,
                 highlight = highlightOptions(
                     color = "black",
                     fillOpacity = 0.9,
                     bringToFront = TRUE
-                ),
-                popup = ~ paste0(
-                    County, ": ",
-                    db[[input$layer]] * 100, "%"
                 )
             )
     })

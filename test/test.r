@@ -2,7 +2,7 @@
 library(shiny)
 library(leaflet)
 
-db <- read_rds("data/db.rds")
+db_test <- read_rds("data/db.rds")
 county_list <- db %>%
     arrange(County) %>%
     pull(County)
