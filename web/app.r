@@ -47,7 +47,7 @@ server <- function(input, output) {
     reactive_info <- reactive({
         req(input$county)
         db %>%
-            filter(County == input$county)
+            filter(County == input$county) # nolint
     })
 
     # output$info is the info panel
