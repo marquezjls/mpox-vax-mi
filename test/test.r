@@ -1,9 +1,14 @@
 # runApp runs the shiny app
+library(shiny)
+library(leaflet)
+
+db <- read_rds("data/db.rds")
+county_list <- db %>%
+    arrange(County) %>%
+    pull(County)
 runApp("./web")
 
 # leaflet debugging
-db <- read_rds("data/db.rds")
-
 leaflet(data = db) %>%
     setView(-85.602, 44.315, zoom = 7) %>%
     addTiles() %>%

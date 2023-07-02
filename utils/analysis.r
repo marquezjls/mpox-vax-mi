@@ -50,9 +50,12 @@ county_merged <- county_prep %>%
     ) %>%
         select(County, adj_total_cnt, first_pct, second_pct)
 
+# prediction_model is the model used to predict the outbreak probability
+prediction_model <- read_csv("data/prediction_model.csv")
+
 # county_model is the predicted outbreak probability of Michigan counties
 county_model <- county_merged %>%
-    cross_join(outbreak_predict) %>%
+    cross_join(prediction_model) %>%
     group_by(County) %>%
     mutate(
         coverage_diff = first_pct - Coverage
@@ -62,15 +65,17 @@ county_model <- county_merged %>%
     select(County, outbreak_prob)
 
 # county_all is the data_merged and county_model merged
-    left_join(county_model, by = "County")
+county_all <- county_merged %>%
+    left_join(county_model, by = "County") %>%
+    mutate(
+        outbreak_prob = round(outbreak_prob, 3)
+    )
 
 # counties_geo is the geographic data of Michigan counties from **geo.r**
 county_geo <- read_rds("data/counties_mi.rds")
 
 # county_final is the final data for the shiny app
 county_final <- county_geo %>%
-    mutate(county_name = str_split_i(NAME, ",", 1)) %>%
-    select(county_name, geometry) %>%
-    left_join(county_all, by = c("county_name" = "County"))
+    left_join(county_all, by = c("County" = "County"))
 
 write_rds(county_final, "data/db.rds")

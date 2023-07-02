@@ -1,12 +1,18 @@
+library(tigris)
 library(tidyverse)
 
-# counties_mi_r gets the acs data of Michigan counties
-counties_mi_r <- tidycensus::get_acs(
-    geography = "county",
-    variables = "B01003_001E",
+# counties_mi_r gets the shape data of Michigan counties
+counties_mi_r <- counties(
     state = "MI",
     year = 2021,
-    geometry = TRUE
-)
+    cb = TRUE
+) %>%
+    select(
+        NAMELSAD,
+        geometry
+    ) %>%
+    rename(
+        County = NAMELSAD,
+    )
 
 write_rds(counties_mi_r, "data/counties_mi.rds")
