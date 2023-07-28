@@ -7,7 +7,7 @@ library(cartogram)
 
 ##Downloading feature geometry from the Census website.  To cache shapefiles for use 
 ##in future sessions, set `options(tigris_use_cache = TRUE)`.
-### update here
+### update here 
 options(tigris_use_cache = TRUE)
 
 ## import files
