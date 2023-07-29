@@ -5,13 +5,12 @@ county_hiv_r <- read_csv("data/mi_hiv.csv", skip = 9)
 county_vaccine_r <- read_csv("data/vaccine_rates_mdhhs_24apr23.csv")
 
 # county_prep is the data of PrEP in Michigan counties
+## population is the at risk population vs cases
 county_prep <- county_prep_r %>%
-    select(County, Cases) %>%
-    mutate(
-        cases_prep = parse_number(na_if(Cases, "Data suppressed"))
-    )
+    select(County, cases_prep = Population)
 
 # county_hiv is the data of HIV in Michigan counties
+## hiv cases is the number of HIV cases
 county_hiv <- county_hiv_r %>%
     select(County, Cases) %>%
     mutate(
@@ -76,6 +75,6 @@ county_geo <- read_rds("data/counties_mi.rds")
 
 # county_final is the final data for the shiny app
 county_final <- county_geo %>%
-    left_join(county_all, by = c("County" = "County"))
+    left_join(as.data.frame(county_all), by = c("County" = "County"))
 
 write_rds(county_final, "data/db.rds")
